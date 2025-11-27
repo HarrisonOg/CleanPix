@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.data.MetadataStripper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,8 +28,10 @@ class MainViewModel : ViewModel() {
     val state: StateFlow<ImageState> = _state.asStateFlow()
 
     private lateinit var metadataStripper: MetadataStripper
+    private lateinit var context: Context
 
     fun initialize(context: Context) {
+        this.context = context
         metadataStripper = MetadataStripper(context)
     }
 
@@ -53,7 +56,7 @@ class MainViewModel : ViewModel() {
                 _state.update {
                     it.copy(
                         isProcessing = false,
-                        error = "Failed to read image: ${e.message}"
+                        error = context.getString(R.string.error_read_image, e.message ?: "Unknown error")
                     )
                 }
             }
@@ -83,7 +86,7 @@ class MainViewModel : ViewModel() {
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = "Failed to strip metadata: ${exception.message}"
+                            error = context.getString(R.string.error_strip_metadata, exception.message ?: "Unknown error")
                         )
                     }
                 }
@@ -96,7 +99,9 @@ class MainViewModel : ViewModel() {
 
             _state.update { it.copy(isProcessing = true, error = null) }
 
-            val fileName = "cleaned_${System.currentTimeMillis()}.jpg"
+            val fileName = context.getString(R.string.file_name_prefix) +
+                           System.currentTimeMillis() +
+                           context.getString(R.string.file_extension)
 
             metadataStripper.saveToPermanentStorage(cleanedUri, fileName)
                 .onSuccess { file ->
@@ -111,7 +116,7 @@ class MainViewModel : ViewModel() {
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = "Failed to save image: ${exception.message}"
+                            error = context.getString(R.string.error_save_image, exception.message ?: "Unknown error")
                         )
                     }
                 }

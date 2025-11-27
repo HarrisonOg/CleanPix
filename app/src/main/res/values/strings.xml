@@ -1,3 +1,39 @@
 <resources>
     <string name="app_name">CleanPix</string>
+
+    <!-- Main Screen -->
+    <string name="title_metadata_stripper">Metadata Stripper</string>
+    <string name="button_select_image">Select Image</string>
+    <string name="button_strip_metadata">Strip Metadata</string>
+    <string name="button_save_image">Save Image</string>
+    <string name="button_start_over">Start Over</string>
+    <string name="button_ok">OK</string>
+
+    <!-- Image Labels -->
+    <string name="label_original_image">Original Image</string>
+    <string name="label_cleaned_image">✓ Cleaned Image</string>
+    <string name="content_desc_original_image">Original image</string>
+    <string name="content_desc_cleaned_image">Cleaned image</string>
+
+    <!-- Metadata Status -->
+    <string name="metadata_found">Metadata Found:</string>
+    <string name="no_metadata_found">No metadata found</string>
+    <string name="metadata_removed_success">✓ All metadata successfully removed</string>
+    <string name="warning_metadata_remains">Warning: Some metadata remains:</string>
+
+    <!-- Dialog Titles -->
+    <string name="dialog_title_error">Error</string>
+    <string name="dialog_title_success">Success</string>
+
+    <!-- Messages -->
+    <string name="image_saved_to">Image saved to:\n%1$s</string>
+
+    <!-- Error Messages -->
+    <string name="error_read_image">Failed to read image: %1$s</string>
+    <string name="error_strip_metadata">Failed to strip metadata: %1$s</string>
+    <string name="error_save_image">Failed to save image: %1$s</string>
+
+    <!-- File Names -->
+    <string name="file_name_prefix">cleaned_</string>
+    <string name="file_extension">.jpg</string>
 </resources>

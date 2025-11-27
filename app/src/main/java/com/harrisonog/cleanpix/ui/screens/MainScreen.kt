@@ -12,8 +12,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.ui.ImageState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,7 +38,7 @@ fun MainScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Metadata Stripper") },
+                title = { Text(stringResource(R.string.title_metadata_stripper)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -62,7 +64,7 @@ fun MainScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Select Image")
+                Text(stringResource(R.string.button_select_image))
             }
 
             // Show original image and metadata
@@ -75,13 +77,13 @@ fun MainScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Original Image",
+                            text = stringResource(R.string.label_original_image),
                             style = MaterialTheme.typography.titleMedium
                         )
 
                         AsyncImage(
                             model = state.originalUri,
-                            contentDescription = "Original image",
+                            contentDescription = stringResource(R.string.content_desc_original_image),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp),
@@ -90,7 +92,7 @@ fun MainScreen(
 
                         if (state.originalMetadata.isNotEmpty()) {
                             Text(
-                                text = "Metadata Found:",
+                                text = stringResource(R.string.metadata_found),
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -103,7 +105,7 @@ fun MainScreen(
                             }
                         } else {
                             Text(
-                                text = "No metadata found",
+                                text = stringResource(R.string.no_metadata_found),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.tertiary
                             )
@@ -124,7 +126,7 @@ fun MainScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    Text("Strip Metadata")
+                    Text(stringResource(R.string.button_strip_metadata))
                 }
             }
 
@@ -141,14 +143,14 @@ fun MainScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "✓ Cleaned Image",
+                            text = stringResource(R.string.label_cleaned_image),
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
 
                         AsyncImage(
                             model = state.cleanedUri,
-                            contentDescription = "Cleaned image",
+                            contentDescription = stringResource(R.string.content_desc_cleaned_image),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp),
@@ -157,13 +159,13 @@ fun MainScreen(
 
                         if (state.cleanedMetadata.isEmpty()) {
                             Text(
-                                text = "✓ All metadata successfully removed",
+                                text = stringResource(R.string.metadata_removed_success),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
                         } else {
                             Text(
-                                text = "Warning: Some metadata remains:",
+                                text = stringResource(R.string.warning_metadata_remains),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -185,7 +187,7 @@ fun MainScreen(
                         onClick = onClearState,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Start Over")
+                        Text(stringResource(R.string.button_start_over))
                     }
 
                     Button(
@@ -193,7 +195,7 @@ fun MainScreen(
                         modifier = Modifier.weight(1f),
                         enabled = !state.isProcessing
                     ) {
-                        Text("Save Image")
+                        Text(stringResource(R.string.button_save_image))
                     }
                 }
             }
@@ -202,11 +204,11 @@ fun MainScreen(
             state.error?.let { error ->
                 AlertDialog(
                     onDismissRequest = onDismissError,
-                    title = { Text("Error") },
+                    title = { Text(stringResource(R.string.dialog_title_error)) },
                     text = { Text(error) },
                     confirmButton = {
                         TextButton(onClick = onDismissError) {
-                            Text("OK")
+                            Text(stringResource(R.string.button_ok))
                         }
                     }
                 )
@@ -216,11 +218,11 @@ fun MainScreen(
             state.savedPath?.let { path ->
                 AlertDialog(
                     onDismissRequest = onDismissSaved,
-                    title = { Text("Success") },
-                    text = { Text("Image saved to:\n$path") },
+                    title = { Text(stringResource(R.string.dialog_title_success)) },
+                    text = { Text(stringResource(R.string.image_saved_to, path)) },
                     confirmButton = {
                         TextButton(onClick = onDismissSaved) {
-                            Text("OK")
+                            Text(stringResource(R.string.button_ok))
                         }
                     }
                 )
