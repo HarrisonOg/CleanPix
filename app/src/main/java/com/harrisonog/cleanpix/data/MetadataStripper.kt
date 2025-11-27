@@ -1,9 +1,13 @@
 package com.harrisonog.cleanpix.data
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.exifinterface.media.ExifInterface
 import java.io.File
 import java.io.FileOutputStream
@@ -90,11 +94,60 @@ class MetadataStripper(private val context: Context) {
     }
 
     /**
-     * Save cleaned image to permanent storage (Pictures directory)
+     * Save cleaned image to permanent storage (public Pictures directory)
      */
     fun saveToPermanentStorage(tempUri: Uri, fileName: String): Result<File> {
         return try {
-            val picturesDir = File(context.getExternalFilesDir(null), "CleanedImages")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Android 10+ (API 29+): Use MediaStore API
+                saveToPicturesMediaStore(tempUri, fileName)
+            } else {
+                // Android 9 and below: Use legacy external storage
+                saveToPicturesLegacy(tempUri, fileName)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Save to public Pictures directory using MediaStore (Android 10+)
+     */
+    private fun saveToPicturesMediaStore(tempUri: Uri, fileName: String): Result<File> {
+        return try {
+            val contentValues = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/CleanPix")
+            }
+
+            val resolver = context.contentResolver
+            val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                ?: return Result.failure(Exception("Failed to create MediaStore entry"))
+
+            resolver.openOutputStream(imageUri)?.use { output ->
+                resolver.openInputStream(tempUri)?.use { input ->
+                    input.copyTo(output)
+                }
+            }
+
+            // Return a file representation (note: actual path may not be accessible on Android 10+)
+            val picturesPath = "${Environment.getExternalStorageDirectory()}/${Environment.DIRECTORY_PICTURES}/CleanPix/$fileName"
+            Result.success(File(picturesPath))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Save to public Pictures directory using legacy method (Android 9 and below)
+     */
+    private fun saveToPicturesLegacy(tempUri: Uri, fileName: String): Result<File> {
+        return try {
+            val picturesDir = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "CleanPix"
+            )
             picturesDir.mkdirs()
 
             val outputFile = File(picturesDir, fileName)
@@ -104,6 +157,11 @@ class MetadataStripper(private val context: Context) {
                     input.copyTo(output)
                 }
             }
+
+            // Notify the media scanner about the new file
+            val scanIntent = android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+            scanIntent.data = Uri.fromFile(outputFile)
+            context.sendBroadcast(scanIntent)
 
             Result.success(outputFile)
         } catch (e: Exception) {
