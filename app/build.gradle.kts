@@ -57,4 +57,13 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Coil for image loading
+    implementation(libs.coil.compose)
+
+    // ExifInterface for metadata handling
+    implementation(libs.androidx.exifinterface)
+
+    // Core Android
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }
