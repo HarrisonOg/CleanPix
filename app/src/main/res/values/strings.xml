@@ -6,8 +6,10 @@
     <string name="button_select_image">Select Image</string>
     <string name="button_strip_metadata">Strip Metadata</string>
     <string name="button_save_image">Save Image</string>
+    <string name="button_share">Share</string>
     <string name="button_start_over">Start Over</string>
     <string name="button_ok">OK</string>
+    <string name="share_image">Share Image</string>
 
     <!-- Image Labels -->
     <string name="label_original_image">Original Image</string>

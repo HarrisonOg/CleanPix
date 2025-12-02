@@ -1,5 +1,6 @@
 package com.harrisonog.cleanpix.ui.screens
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -7,16 +8,21 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.ui.ImageState
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,6 +35,8 @@ fun MainScreen(
     onDismissError: () -> Unit,
     onDismissSaved: () -> Unit
 ) {
+    val context = LocalContext.current
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -188,6 +196,50 @@ fun MainScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(stringResource(R.string.button_start_over))
+                    }
+
+                    Button(
+                        onClick = {
+                            state.cleanedUri?.let { uri ->
+                                try {
+                                    // Convert file:// URI to content:// URI using FileProvider
+                                    val contentUri = if (uri.scheme == "file") {
+                                        val file = File(uri.path ?: return@let)
+                                        FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.fileprovider",
+                                            file
+                                        )
+                                    } else {
+                                        uri
+                                    }
+
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_STREAM, contentUri)
+                                        type = "image/*"
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(
+                                        Intent.createChooser(shareIntent, context.getString(R.string.share_image))
+                                    )
+                                } catch (e: Exception) {
+                                    // Handle error silently or show a toast
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Failed to share image: ${e.message}",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = stringResource(R.string.button_share),
+                            modifier = Modifier.size(20.dp)
+                        )
                     }
 
                     Button(
