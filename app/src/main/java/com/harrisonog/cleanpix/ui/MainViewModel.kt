@@ -1,8 +1,8 @@
 package com.harrisonog.cleanpix.ui
 
-import android.content.Context
+import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.data.MetadataStripper
@@ -23,18 +23,12 @@ data class ImageState(
     val hasCleanedMetadata: Boolean = false
 )
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(ImageState())
     val state: StateFlow<ImageState> = _state.asStateFlow()
 
-    private lateinit var metadataStripper: MetadataStripper
-    private lateinit var context: Context
-
-    fun initialize(context: Context) {
-        this.context = context
-        metadataStripper = MetadataStripper(context)
-    }
+    private val metadataStripper: MetadataStripper = MetadataStripper(application)
 
     fun selectImage(uri: Uri) {
         viewModelScope.launch {
@@ -57,7 +51,7 @@ class MainViewModel : ViewModel() {
                 _state.update {
                     it.copy(
                         isProcessing = false,
-                        error = context.getString(R.string.error_read_image, e.message ?: "Unknown error")
+                        error = getApplication<Application>().getString(R.string.error_read_image, e.message ?: "Unknown error")
                     )
                 }
             }
@@ -88,7 +82,7 @@ class MainViewModel : ViewModel() {
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = context.getString(R.string.error_strip_metadata, exception.message ?: "Unknown error")
+                            error = getApplication<Application>().getString(R.string.error_strip_metadata, exception.message ?: "Unknown error")
                         )
                     }
                 }
@@ -101,12 +95,13 @@ class MainViewModel : ViewModel() {
 
             _state.update { it.copy(isProcessing = true, error = null) }
 
+            val app = getApplication<Application>()
             val fileName = if (!customFilename.isNullOrBlank()) {
-                customFilename + context.getString(R.string.file_extension)
+                customFilename + app.getString(R.string.file_extension)
             } else {
-                context.getString(R.string.file_name_prefix) +
+                app.getString(R.string.file_name_prefix) +
                 System.currentTimeMillis() +
-                context.getString(R.string.file_extension)
+                app.getString(R.string.file_extension)
             }
 
             metadataStripper.saveToPermanentStorage(cleanedUri, fileName)
@@ -122,7 +117,7 @@ class MainViewModel : ViewModel() {
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = context.getString(R.string.error_save_image, exception.message ?: "Unknown error")
+                            error = getApplication<Application>().getString(R.string.error_save_image, exception.message ?: "Unknown error")
                         )
                     }
                 }

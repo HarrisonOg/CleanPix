@@ -19,10 +19,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Initialize ViewModel with context
-        viewModel.initialize(applicationContext)
-
+        
         setContent {
             CleanPixTheme() {
                 Surface(
