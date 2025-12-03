@@ -30,13 +30,15 @@ fun MainScreen(
     state: ImageState,
     onImageSelected: (Uri) -> Unit,
     onStripMetadata: () -> Unit,
-    onSaveImage: () -> Unit,
+    onSaveImage: (String) -> Unit,
     onClearState: () -> Unit,
     onDismissError: () -> Unit,
     onDismissSaved: () -> Unit,
     onEditImage: (Uri) -> Unit = {}
 ) {
     val context = LocalContext.current
+    var showFilenameDialog by remember { mutableStateOf(false) }
+    var customFilename by remember { mutableStateOf("") }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -294,7 +296,10 @@ fun MainScreen(
                             }
 
                             Button(
-                                onClick = onSaveImage,
+                                onClick = {
+                                    customFilename = "cleaned_${System.currentTimeMillis()}"
+                                    showFilenameDialog = true
+                                },
                                 modifier = Modifier.weight(1f),
                                 enabled = !state.isProcessing
                             ) {
@@ -303,6 +308,44 @@ fun MainScreen(
                         }
                     }
                 }
+            }
+
+            // Filename input dialog
+            if (showFilenameDialog) {
+                AlertDialog(
+                    onDismissRequest = { showFilenameDialog = false },
+                    title = { Text(stringResource(R.string.dialog_title_save_image)) },
+                    text = {
+                        Column {
+                            Text(stringResource(R.string.dialog_message_enter_filename))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = customFilename,
+                                onValueChange = { customFilename = it },
+                                label = { Text(stringResource(R.string.label_filename)) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if (customFilename.isNotBlank()) {
+                                    onSaveImage(customFilename.trim())
+                                    showFilenameDialog = false
+                                }
+                            }
+                        ) {
+                            Text(stringResource(R.string.button_save))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showFilenameDialog = false }) {
+                            Text(stringResource(R.string.button_cancel))
+                        }
+                    }
+                )
             }
 
             // Error message

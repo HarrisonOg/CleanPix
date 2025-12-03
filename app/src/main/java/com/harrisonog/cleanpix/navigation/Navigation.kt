@@ -39,7 +39,9 @@ fun AppNavigation(
                 state = state,
                 onImageSelected = viewModel::selectImage,
                 onStripMetadata = viewModel::stripMetadata,
-                onSaveImage = viewModel::saveCleanedImage,
+                onSaveImage = { filename ->
+                    viewModel.saveCleanedImage(filename)
+                },
                 onClearState = viewModel::clearState,
                 onDismissError = viewModel::dismissError,
                 onDismissSaved = viewModel::dismissSavedMessage,

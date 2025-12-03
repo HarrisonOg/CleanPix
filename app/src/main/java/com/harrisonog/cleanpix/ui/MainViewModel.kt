@@ -95,15 +95,19 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun saveCleanedImage() {
+    fun saveCleanedImage(customFilename: String? = null) {
         viewModelScope.launch {
             val cleanedUri = _state.value.cleanedUri ?: return@launch
 
             _state.update { it.copy(isProcessing = true, error = null) }
 
-            val fileName = context.getString(R.string.file_name_prefix) +
-                           System.currentTimeMillis() +
-                           context.getString(R.string.file_extension)
+            val fileName = if (!customFilename.isNullOrBlank()) {
+                customFilename + context.getString(R.string.file_extension)
+            } else {
+                context.getString(R.string.file_name_prefix) +
+                System.currentTimeMillis() +
+                context.getString(R.string.file_extension)
+            }
 
             metadataStripper.saveToPermanentStorage(cleanedUri, fileName)
                 .onSuccess { file ->
