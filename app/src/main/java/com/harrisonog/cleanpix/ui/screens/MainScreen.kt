@@ -168,6 +168,14 @@ fun MainScreen(
                             Text(stringResource(R.string.button_edit_image))
                         }
                     }
+
+                    // Start Over button
+                    OutlinedButton(
+                        onClick = onClearState,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(R.string.button_start_over))
+                    }
                 }
 
                 // Metadata has been cleaned - Show cleaned image and action buttons
