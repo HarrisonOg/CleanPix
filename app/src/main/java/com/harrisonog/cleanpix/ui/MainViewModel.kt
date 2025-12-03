@@ -19,7 +19,8 @@ data class ImageState(
     val cleanedMetadata: Map<String, String> = emptyMap(),
     val isProcessing: Boolean = false,
     val error: String? = null,
-    val savedPath: String? = null
+    val savedPath: String? = null,
+    val hasCleanedMetadata: Boolean = false
 )
 
 class MainViewModel : ViewModel() {
@@ -78,7 +79,8 @@ class MainViewModel : ViewModel() {
                         it.copy(
                             cleanedUri = cleanedUri,
                             cleanedMetadata = cleanedMetadata,
-                            isProcessing = false
+                            isProcessing = false,
+                            hasCleanedMetadata = true
                         )
                     }
                 }

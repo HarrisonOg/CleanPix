@@ -64,147 +64,100 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Select Image Button
-            Button(
-                onClick = {
-                    photoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.button_select_image))
-            }
-
-            // Show original image and metadata
-            if (state.originalUri != null) {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+            when {
+                // No image selected - Show only "Choose Image" button
+                state.originalUri == null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = stringResource(R.string.label_original_image),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        AsyncImage(
-                            model = state.originalUri,
-                            contentDescription = stringResource(R.string.content_desc_original_image),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        if (state.originalMetadata.isNotEmpty()) {
-                            Text(
-                                text = stringResource(R.string.metadata_found),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-
-                            state.originalMetadata.forEach { (key, value) ->
-                                Text(
-                                    text = "$key: $value",
-                                    style = MaterialTheme.typography.bodySmall
+                        Button(
+                            onClick = {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                 )
-                            }
-                        } else {
-                            Text(
-                                text = stringResource(R.string.no_metadata_found),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.button_choose_image))
                         }
                     }
                 }
 
-                // Strip Metadata Button
-                Button(
-                    onClick = onStripMetadata,
-                    enabled = !state.isProcessing,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (state.isProcessing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-                    Text(stringResource(R.string.button_strip_metadata))
-                }
-            }
-
-            // Show cleaned image
-            if (state.cleanedUri != null) {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                // Image selected but metadata not cleaned yet
+                !state.hasCleanedMetadata -> {
+                    // Show image and metadata
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = stringResource(R.string.label_cleaned_image),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        AsyncImage(
-                            model = state.cleanedUri,
-                            contentDescription = stringResource(R.string.content_desc_cleaned_image),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        if (state.cleanedMetadata.isEmpty()) {
-                            Text(
-                                text = stringResource(R.string.metadata_removed_success),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            AsyncImage(
+                                model = state.originalUri,
+                                contentDescription = stringResource(R.string.content_desc_original_image),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp),
+                                contentScale = ContentScale.Fit
                             )
-                        } else {
-                            Text(
-                                text = stringResource(R.string.warning_metadata_remains),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                            state.cleanedMetadata.forEach { (key, value) ->
+
+                            if (state.originalMetadata.isNotEmpty()) {
                                 Text(
-                                    text = "$key: $value",
-                                    style = MaterialTheme.typography.bodySmall
+                                    text = stringResource(R.string.metadata_found),
+                                    style = MaterialTheme.typography.titleSmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+
+                                for ((key, value) in state.originalMetadata.entries.take(5)) {
+                                    Text(
+                                        text = "$key: $value",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+
+                                if (state.originalMetadata.size > 5) {
+                                    Text(
+                                        text = "... and ${state.originalMetadata.size - 5} more",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.no_metadata_found),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.tertiary
                                 )
                             }
                         }
                     }
-                }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                    // Clean Metadata and Edit Image buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        OutlinedButton(
-                            onClick = onClearState,
+                        Button(
+                            onClick = onStripMetadata,
+                            enabled = !state.isProcessing,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(stringResource(R.string.button_start_over))
+                            if (state.isProcessing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            } else {
+                                Text(stringResource(R.string.button_clean_metadata))
+                            }
                         }
 
                         Button(
                             onClick = {
-                                state.cleanedUri?.let { uri ->
+                                state.originalUri?.let { uri ->
                                     onEditImage(uri)
                                 }
                             },
@@ -213,61 +166,140 @@ fun MainScreen(
                             Text(stringResource(R.string.button_edit_image))
                         }
                     }
+                }
 
-                    Row(
+                // Metadata has been cleaned - Show cleaned image and action buttons
+                else -> {
+                    Card(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
                     ) {
-                        Button(
-                            onClick = {
-                                state.cleanedUri?.let { uri ->
-                                    try {
-                                        // Convert file:// URI to content:// URI using FileProvider
-                                        val contentUri = if (uri.scheme == "file") {
-                                            val file = File(uri.path ?: return@let)
-                                            FileProvider.getUriForFile(
-                                                context,
-                                                "${context.packageName}.fileprovider",
-                                                file
-                                            )
-                                        } else {
-                                            uri
-                                        }
-
-                                        val shareIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_STREAM, contentUri)
-                                            type = "image/*"
-                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        }
-                                        context.startActivity(
-                                            Intent.createChooser(shareIntent, context.getString(R.string.share_image))
-                                        )
-                                    } catch (e: Exception) {
-                                        // Handle error silently or show a toast
-                                        android.widget.Toast.makeText(
-                                            context,
-                                            "Failed to share image: ${e.message}",
-                                            android.widget.Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = stringResource(R.string.button_share),
-                                modifier = Modifier.size(20.dp)
+                            Text(
+                                text = stringResource(R.string.label_cleaned_image),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
                             )
+
+                            AsyncImage(
+                                model = state.cleanedUri,
+                                contentDescription = stringResource(R.string.content_desc_cleaned_image),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp),
+                                contentScale = ContentScale.Fit
+                            )
+
+                            if (state.cleanedMetadata.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.metadata_removed_success),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.warning_metadata_remains),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                for ((key, value) in state.cleanedMetadata.entries) {
+                                    Text(
+                                        text = "$key: $value",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    state.cleanedUri?.let { uri ->
+                                        try {
+                                            // Convert file:// URI to content:// URI using FileProvider
+                                            val contentUri = if (uri.scheme == "file") {
+                                                val file = File(uri.path ?: return@let)
+                                                FileProvider.getUriForFile(
+                                                    context,
+                                                    "${context.packageName}.fileprovider",
+                                                    file
+                                                )
+                                            } else {
+                                                uri
+                                            }
+
+                                            val shareIntent = Intent().apply {
+                                                action = Intent.ACTION_SEND
+                                                putExtra(Intent.EXTRA_STREAM, contentUri)
+                                                type = "image/*"
+                                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                            }
+                                            context.startActivity(
+                                                Intent.createChooser(shareIntent, context.getString(R.string.share_image))
+                                            )
+                                        } catch (e: Exception) {
+                                            android.widget.Toast.makeText(
+                                                context,
+                                                "Failed to share image: ${e.message}",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = stringResource(R.string.button_share),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(stringResource(R.string.button_share))
+                            }
+
+                            Button(
+                                onClick = {
+                                    state.cleanedUri?.let { uri ->
+                                        onEditImage(uri)
+                                    }
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.button_edit_image))
+                            }
                         }
 
-                        Button(
-                            onClick = onSaveImage,
-                            modifier = Modifier.weight(1f),
-                            enabled = !state.isProcessing
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(stringResource(R.string.button_save_image))
+                            OutlinedButton(
+                                onClick = onClearState,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(stringResource(R.string.button_start_over))
+                            }
+
+                            Button(
+                                onClick = onSaveImage,
+                                modifier = Modifier.weight(1f),
+                                enabled = !state.isProcessing
+                            ) {
+                                Text(stringResource(R.string.button_save_image))
+                            }
                         }
                     }
                 }

@@ -3,7 +3,9 @@
 
     <!-- Main Screen -->
     <string name="title_metadata_stripper">Metadata Stripper</string>
+    <string name="button_choose_image">Choose Image</string>
     <string name="button_select_image">Select Image</string>
+    <string name="button_clean_metadata">Clean Metadata</string>
     <string name="button_strip_metadata">Strip Metadata</string>
     <string name="button_save_image">Save Image</string>
     <string name="button_share">Share</string>
