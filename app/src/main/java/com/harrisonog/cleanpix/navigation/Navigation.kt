@@ -12,6 +12,7 @@ import androidx.navigation.navArgument
 import com.harrisonog.cleanpix.ui.MainViewModel
 import com.harrisonog.cleanpix.ui.screens.ImageEditorScreen
 import com.harrisonog.cleanpix.ui.screens.MainScreen
+import androidx.core.net.toUri
 
 sealed class Screen(val route: String) {
     object Main : Screen("main")
@@ -60,7 +61,7 @@ fun AppNavigation(
             )
         ) { backStackEntry ->
             val encodedUri = backStackEntry.arguments?.getString("imageUri")
-            val imageUri = encodedUri?.let { Uri.parse(Uri.decode(it)) }
+            val imageUri = encodedUri?.let { Uri.decode(it).toUri() }
 
             ImageEditorScreen(
                 imageUri = imageUri,
