@@ -33,7 +33,8 @@ fun MainScreen(
     onSaveImage: () -> Unit,
     onClearState: () -> Unit,
     onDismissError: () -> Unit,
-    onDismissSaved: () -> Unit
+    onDismissSaved: () -> Unit,
+    onEditImage: (Uri) -> Unit = {}
 ) {
     val context = LocalContext.current
 
@@ -187,67 +188,87 @@ fun MainScreen(
                     }
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onClearState,
-                        modifier = Modifier.weight(1f)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(R.string.button_start_over))
-                    }
+                        OutlinedButton(
+                            onClick = onClearState,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.button_start_over))
+                        }
 
-                    Button(
-                        onClick = {
-                            state.cleanedUri?.let { uri ->
-                                try {
-                                    // Convert file:// URI to content:// URI using FileProvider
-                                    val contentUri = if (uri.scheme == "file") {
-                                        val file = File(uri.path ?: return@let)
-                                        FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            file
-                                        )
-                                    } else {
-                                        uri
-                                    }
-
-                                    val shareIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_STREAM, contentUri)
-                                        type = "image/*"
-                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    }
-                                    context.startActivity(
-                                        Intent.createChooser(shareIntent, context.getString(R.string.share_image))
-                                    )
-                                } catch (e: Exception) {
-                                    // Handle error silently or show a toast
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        "Failed to share image: ${e.message}",
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
+                        Button(
+                            onClick = {
+                                state.cleanedUri?.let { uri ->
+                                    onEditImage(uri)
                                 }
-                            }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = stringResource(R.string.button_share),
-                            modifier = Modifier.size(20.dp)
-                        )
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.button_edit_image))
+                        }
                     }
 
-                    Button(
-                        onClick = onSaveImage,
-                        modifier = Modifier.weight(1f),
-                        enabled = !state.isProcessing
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(R.string.button_save_image))
+                        Button(
+                            onClick = {
+                                state.cleanedUri?.let { uri ->
+                                    try {
+                                        // Convert file:// URI to content:// URI using FileProvider
+                                        val contentUri = if (uri.scheme == "file") {
+                                            val file = File(uri.path ?: return@let)
+                                            FileProvider.getUriForFile(
+                                                context,
+                                                "${context.packageName}.fileprovider",
+                                                file
+                                            )
+                                        } else {
+                                            uri
+                                        }
+
+                                        val shareIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_STREAM, contentUri)
+                                            type = "image/*"
+                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                        }
+                                        context.startActivity(
+                                            Intent.createChooser(shareIntent, context.getString(R.string.share_image))
+                                        )
+                                    } catch (e: Exception) {
+                                        // Handle error silently or show a toast
+                                        android.widget.Toast.makeText(
+                                            context,
+                                            "Failed to share image: ${e.message}",
+                                            android.widget.Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = stringResource(R.string.button_share),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Button(
+                            onClick = onSaveImage,
+                            modifier = Modifier.weight(1f),
+                            enabled = !state.isProcessing
+                        ) {
+                            Text(stringResource(R.string.button_save_image))
+                        }
                     }
                 }
             }

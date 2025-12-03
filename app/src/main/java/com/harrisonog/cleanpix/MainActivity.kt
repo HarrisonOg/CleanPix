@@ -7,11 +7,10 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
+import com.harrisonog.cleanpix.navigation.AppNavigation
 import com.harrisonog.cleanpix.ui.MainViewModel
-import com.harrisonog.cleanpix.ui.screens.MainScreen
 import com.harrisonog.cleanpix.ui.theme.CleanPixTheme
 
 class MainActivity : ComponentActivity() {
@@ -30,16 +29,11 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val state by viewModel.state.collectAsState()
+                    val navController = rememberNavController()
 
-                    MainScreen(
-                        state = state,
-                        onImageSelected = viewModel::selectImage,
-                        onStripMetadata = viewModel::stripMetadata,
-                        onSaveImage = viewModel::saveCleanedImage,
-                        onClearState = viewModel::clearState,
-                        onDismissError = viewModel::dismissError,
-                        onDismissSaved = viewModel::dismissSavedMessage
+                    AppNavigation(
+                        navController = navController,
+                        viewModel = viewModel
                     )
                 }
             }

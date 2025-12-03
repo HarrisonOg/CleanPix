@@ -20,6 +20,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
@@ -68,8 +69,11 @@ data class TransformState(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImageEditorScreen() {
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+fun ImageEditorScreen(
+    imageUri: Uri? = null,
+    onNavigateBack: () -> Unit = {}
+) {
+    var selectedImageUri by remember { mutableStateOf(imageUri) }
     var drawPaths by remember { mutableStateOf<List<DrawPath>>(emptyList()) }
     var currentPath by remember { mutableStateOf<List<Offset>>(emptyList()) }
     var textOverlays by remember { mutableStateOf<List<TextOverlay>>(emptyList()) }
@@ -96,6 +100,11 @@ fun ImageEditorScreen() {
         topBar = {
             TopAppBar(
                 title = { Text("Image Editor") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                },
                 actions = {
                     if (selectedImageUri != null) {
                         IconButton(onClick = { showTextDialog = true }) {
@@ -249,6 +258,10 @@ fun ImageEditorScreen() {
                                         drawPaths = drawPaths,
                                         textOverlays = textOverlays
                                     )
+                                    // Navigate back after saving
+                                    withContext(Dispatchers.Main) {
+                                        onNavigateBack()
+                                    }
                                 }
                             }
                         }

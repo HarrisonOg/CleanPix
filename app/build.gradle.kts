@@ -67,6 +67,9 @@ dependencies {
     // ExifInterface for metadata handling
     implementation(libs.androidx.exifinterface)
 
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+
     // Core Android
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 }
