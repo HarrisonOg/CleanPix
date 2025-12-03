@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculatePan
@@ -18,6 +19,7 @@ import androidx.compose.foundation.gestures.calculateRotation
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -310,60 +312,67 @@ fun InteractiveCanvas(
     Canvas(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.Transparent)
             .pointerInput(isDrawingMode, selectedTextIndex) {
-                if (isDrawingMode) {
-                    detectDragGestures(
-                        onDragStart = { offset ->
-                            onDrawPathUpdate(listOf(offset))
-                        },
-                        onDrag = { change, _ ->
-                            onDrawPathUpdate(currentPath + change.position)
-                        },
-                        onDragEnd = {
-                            if (currentPath.isNotEmpty()) {
-                                onDrawPathComplete(
-                                    DrawPath(
-                                        points = currentPath,
-                                        color = drawingColor,
-                                        strokeWidth = strokeWidth
+                when {
+                    isDrawingMode -> {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val down = awaitFirstDown()
+                                down.consume()
+                                val downPos = down.position
+                                onDrawPathUpdate(listOf(downPos))
+
+                                drag(down.id) { change ->
+                                    change.consume()
+                                    onDrawPathUpdate(currentPath + change.position)
+                                    true
+                                }
+
+                                if (currentPath.isNotEmpty()) {
+                                    onDrawPathComplete(
+                                        DrawPath(
+                                            points = currentPath,
+                                            color = drawingColor,
+                                            strokeWidth = strokeWidth
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    )
-                } else {
-                    detectTapGestures { tapOffset ->
-                        // Check if tap is on any text
-                        val tappedIndex = textOverlays.indexOfLast { textOverlay ->
-                            isPointInTextBounds(tapOffset, textOverlay)
-                        }
-                        onTextSelect(if (tappedIndex >= 0) tappedIndex else null)
                     }
-                }
-            }
-            .pointerInput(selectedTextIndex) {
-                if (selectedTextIndex != null && !isDrawingMode) {
-                    detectTransformGestures { centroid, pan, zoom, rotation ->
-                        val currentTransform = textTransforms[selectedTextIndex]
-                            ?: TransformState()
+                    selectedTextIndex != null -> {
+                        detectTransformGestures { centroid, pan, zoom, rotation ->
+                            val currentTransform = textTransforms[selectedTextIndex]
+                                ?: TransformState()
 
-                        val newTransform = TransformState(
-                            offset = currentTransform.offset + pan,
-                            rotation = currentTransform.rotation + rotation,
-                            scale = (currentTransform.scale * zoom).coerceIn(0.5f, 3f)
-                        )
-
-                        textTransforms = textTransforms + (selectedTextIndex to newTransform)
-
-                        val overlay = textOverlays[selectedTextIndex]
-                        onTextUpdate(
-                            selectedTextIndex,
-                            overlay.copy(
-                                position = overlay.position + pan,
-                                rotation = overlay.rotation + rotation,
-                                scale = (overlay.scale * zoom).coerceIn(0.5f, 3f)
+                            val newTransform = TransformState(
+                                offset = currentTransform.offset + pan,
+                                rotation = currentTransform.rotation + rotation,
+                                scale = (currentTransform.scale * zoom).coerceIn(0.5f, 3f)
                             )
-                        )
+
+                            textTransforms = textTransforms + (selectedTextIndex to newTransform)
+
+                            val overlay = textOverlays[selectedTextIndex]
+                            onTextUpdate(
+                                selectedTextIndex,
+                                overlay.copy(
+                                    position = overlay.position + pan,
+                                    rotation = overlay.rotation + rotation,
+                                    scale = (overlay.scale * zoom).coerceIn(0.5f, 3f)
+                                )
+                            )
+                        }
+                    }
+                    else -> {
+                        detectTapGestures { tapOffset ->
+                            // Check if tap is on any text
+                            val tappedIndex = textOverlays.indexOfLast { textOverlay ->
+                                isPointInTextBounds(tapOffset, textOverlay)
+                            }
+                            onTextSelect(if (tappedIndex >= 0) tappedIndex else null)
+                        }
                     }
                 }
             }
