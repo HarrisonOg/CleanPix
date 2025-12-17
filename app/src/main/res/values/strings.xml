@@ -2,12 +2,11 @@
     <string name="app_name">CleanPix</string>
 
     <!-- Main Screen -->
-    <string name="title_metadata_stripper">Metadata Stripper</string>
+    <string name="title_metadata_stripper">CleanPix</string>
     <string name="button_select_image">Select Image</string>
     <string name="button_strip_metadata">Strip Metadata</string>
     <string name="button_save_image">Save Image</string>
     <string name="button_share">Share</string>
-    <string name="button_edit_image">Edit Image</string>
     <string name="button_start_over">Start Over</string>
     <string name="button_ok">OK</string>
     <string name="share_image">Share Image</string>

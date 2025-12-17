@@ -201,17 +201,6 @@ fun MainScreen(
                         ) {
                             Text(stringResource(R.string.button_start_over))
                         }
-
-                        Button(
-                            onClick = {
-                                state.cleanedUri?.let { uri ->
-                                    onEditImage(uri)
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(stringResource(R.string.button_edit_image))
-                        }
                     }
 
                     Row(
@@ -220,7 +209,7 @@ fun MainScreen(
                     ) {
                         Button(
                             onClick = {
-                                state.cleanedUri?.let { uri ->
+                                state.cleanedUri.let { uri ->
                                     try {
                                         // Convert file:// URI to content:// URI using FileProvider
                                         val contentUri = if (uri.scheme == "file") {
