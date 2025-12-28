@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -34,6 +36,7 @@ fun ImageMetadataScreen(
     val context = LocalContext.current
     var showFileNameDialog by remember { mutableStateOf(false) }
     var fileName by remember { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
+    var isMetadataExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -78,25 +81,83 @@ fun ImageMetadataScreen(
                             contentScale = ContentScale.Crop
                         )
 
-                        if (state.originalMetadata.isNotEmpty()) {
-                            Text(
-                                text = stringResource(R.string.metadata_found),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.error
+                        // Expandable metadata section
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
+                        ) {
+                            Column {
+                                // Clickable header
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    TextButton(
+                                        onClick = { isMetadataExpanded = !isMetadataExpanded },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = if (isMetadataExpanded) {
+                                                    stringResource(R.string.button_close_metadata)
+                                                } else {
+                                                    stringResource(R.string.button_show_metadata)
+                                                },
+                                                style = MaterialTheme.typography.titleSmall
+                                            )
+                                            Icon(
+                                                imageVector = if (isMetadataExpanded) {
+                                                    Icons.Default.KeyboardArrowUp
+                                                } else {
+                                                    Icons.Default.KeyboardArrowDown
+                                                },
+                                                contentDescription = null
+                                            )
+                                        }
+                                    }
+                                }
 
-                            state.originalMetadata.forEach { (key, value) ->
-                                Text(
-                                    text = "$key: $value",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
+                                // Expandable content
+                                if (isMetadataExpanded) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 12.dp)
+                                            .padding(bottom = 12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        if (state.originalMetadata.isNotEmpty()) {
+                                            Text(
+                                                text = stringResource(R.string.metadata_found),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                color = MaterialTheme.colorScheme.error
+                                            )
+
+                                            state.originalMetadata.forEach { (key, value) ->
+                                                Text(
+                                                    text = "$key: $value",
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
+                                        } else {
+                                            Text(
+                                                text = stringResource(R.string.no_metadata_found),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.tertiary
+                                            )
+                                        }
+                                    }
+                                }
                             }
-                        } else {
-                            Text(
-                                text = stringResource(R.string.no_metadata_found),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.tertiary
-                            )
                         }
                     }
                 }
