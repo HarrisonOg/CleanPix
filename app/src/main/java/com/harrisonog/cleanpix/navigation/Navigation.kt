@@ -44,6 +44,10 @@ fun AppNavigation(
                     viewModel.clearState()
                     navController.popBackStack()
                 },
+                onStartOver = {
+                    viewModel.clearState()
+                    navController.popBackStack()
+                },
                 onDismissError = viewModel::dismissError,
                 onDismissSaved = viewModel::dismissSavedMessage
             )

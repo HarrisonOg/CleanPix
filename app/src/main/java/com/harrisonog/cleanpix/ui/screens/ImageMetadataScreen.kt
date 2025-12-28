@@ -37,6 +37,7 @@ fun ImageMetadataScreen(
     onStripMetadata: () -> Unit,
     onSaveImage: (String) -> Unit,
     onCancel: () -> Unit,
+    onStartOver: () -> Unit,
     onDismissError: () -> Unit,
     onDismissSaved: () -> Unit
 ) {
@@ -315,6 +316,14 @@ fun ImageMetadataScreen(
                     ) {
                         Text(stringResource(R.string.button_save_image))
                     }
+                }
+
+                // Start Over button
+                OutlinedButton(
+                    onClick = onStartOver,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.button_start_over))
                 }
             }
 
