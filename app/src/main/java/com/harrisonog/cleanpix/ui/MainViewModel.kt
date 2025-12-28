@@ -29,10 +29,14 @@ class MainViewModel : ViewModel() {
 
     private lateinit var metadataStripper: MetadataStripper
     private lateinit var context: Context
+    private var isInitialized = false
 
     fun initialize(context: Context) {
-        this.context = context
-        metadataStripper = MetadataStripper(context)
+        if (!isInitialized) {
+            this.context = context
+            metadataStripper = MetadataStripper(context)
+            isInitialized = true
+        }
     }
 
     fun selectImage(uri: Uri) {
