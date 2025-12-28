@@ -2,9 +2,6 @@ package com.harrisonog.cleanpix.ui.screens
 
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -26,23 +23,15 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(
+fun ImageMetadataScreen(
     state: ImageState,
-    onImageSelected: (Uri) -> Unit,
     onStripMetadata: () -> Unit,
     onSaveImage: () -> Unit,
-    onClearState: () -> Unit,
+    onCancel: () -> Unit,
     onDismissError: () -> Unit,
-    onDismissSaved: () -> Unit,
-    onEditImage: (Uri) -> Unit = {}
+    onDismissSaved: () -> Unit
 ) {
     val context = LocalContext.current
-
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        uri?.let(onImageSelected)
-    }
 
     Scaffold(
         topBar = {
@@ -64,20 +53,8 @@ fun MainScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Select Image Button
-            Button(
-                onClick = {
-                    photoPickerLauncher.launch(
-                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.button_select_image))
-            }
-
-            // Show original image and metadata
-            if (state.originalUri != null) {
+            // Show original image and metadata (only if metadata hasn't been cleaned yet)
+            if (state.originalUri != null && state.cleanedUri == null) {
                 Card(
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -95,7 +72,7 @@ fun MainScreen(
                             contentDescription = stringResource(R.string.content_desc_original_image),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(300.dp),
                             contentScale = ContentScale.Crop
                         )
 
@@ -122,24 +99,37 @@ fun MainScreen(
                     }
                 }
 
-                // Strip Metadata Button
-                Button(
-                    onClick = onStripMetadata,
-                    enabled = !state.isProcessing,
-                    modifier = Modifier.fillMaxWidth()
+                // Clean Metadata and Cancel buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (state.isProcessing) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedButton(
+                        onClick = onCancel,
+                        enabled = !state.isProcessing,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(stringResource(R.string.button_cancel))
                     }
-                    Text(stringResource(R.string.button_strip_metadata))
+
+                    Button(
+                        onClick = onStripMetadata,
+                        enabled = !state.isProcessing,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        if (state.isProcessing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(stringResource(R.string.button_strip_metadata))
+                    }
                 }
             }
 
-            // Show cleaned image
+            // Show cleaned image after metadata is stripped
             if (state.cleanedUri != null) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -162,7 +152,7 @@ fun MainScreen(
                             contentDescription = stringResource(R.string.content_desc_cleaned_image),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(300.dp),
                             contentScale = ContentScale.Crop
                         )
 
@@ -188,76 +178,62 @@ fun MainScreen(
                     }
                 }
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                // Share and Save buttons (shown after metadata is cleaned)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Button(
+                        onClick = {
+                            state.cleanedUri.let { uri ->
+                                try {
+                                    // Convert file:// URI to content:// URI using FileProvider
+                                    val contentUri = if (uri.scheme == "file") {
+                                        val file = File(uri.path ?: return@let)
+                                        FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.fileprovider",
+                                            file
+                                        )
+                                    } else {
+                                        uri
+                                    }
+
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_STREAM, contentUri)
+                                        type = "image/*"
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(
+                                        Intent.createChooser(shareIntent, context.getString(R.string.share_image))
+                                    )
+                                } catch (e: Exception) {
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Failed to share image: ${e.message}",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
                     ) {
-                        OutlinedButton(
-                            onClick = onClearState,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(stringResource(R.string.button_start_over))
-                        }
+                        Icon(
+                            imageVector = Icons.Default.Share,
+                            contentDescription = stringResource(R.string.button_share),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(stringResource(R.string.button_share))
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Button(
+                        onClick = onSaveImage,
+                        modifier = Modifier.weight(1f),
+                        enabled = !state.isProcessing
                     ) {
-                        Button(
-                            onClick = {
-                                state.cleanedUri.let { uri ->
-                                    try {
-                                        // Convert file:// URI to content:// URI using FileProvider
-                                        val contentUri = if (uri.scheme == "file") {
-                                            val file = File(uri.path ?: return@let)
-                                            FileProvider.getUriForFile(
-                                                context,
-                                                "${context.packageName}.fileprovider",
-                                                file
-                                            )
-                                        } else {
-                                            uri
-                                        }
-
-                                        val shareIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_STREAM, contentUri)
-                                            type = "image/*"
-                                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                        }
-                                        context.startActivity(
-                                            Intent.createChooser(shareIntent, context.getString(R.string.share_image))
-                                        )
-                                    } catch (e: Exception) {
-                                        // Handle error silently or show a toast
-                                        android.widget.Toast.makeText(
-                                            context,
-                                            "Failed to share image: ${e.message}",
-                                            android.widget.Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
-                            },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = stringResource(R.string.button_share),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Button(
-                            onClick = onSaveImage,
-                            modifier = Modifier.weight(1f),
-                            enabled = !state.isProcessing
-                        ) {
-                            Text(stringResource(R.string.button_save_image))
-                        }
+                        Text(stringResource(R.string.button_save_image))
                     }
                 }
             }
@@ -277,7 +253,7 @@ fun MainScreen(
             }
 
             // Success message
-        state.savedPath?.let { path ->
+            state.savedPath?.let { path ->
                 AlertDialog(
                     onDismissRequest = onDismissSaved,
                     title = { Text(stringResource(R.string.dialog_title_success)) },
