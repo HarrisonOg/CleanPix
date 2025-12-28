@@ -7,20 +7,28 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.harrisonog.cleanpix.R
+import com.harrisonog.cleanpix.ui.components.PrivacyPolicyDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageSelectionScreen(
     onImageSelected: (Uri) -> Unit
 ) {
+    var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
@@ -34,7 +42,15 @@ fun ImageSelectionScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                ),
+                actions = {
+                    IconButton(onClick = { showPrivacyPolicy = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = stringResource(R.string.privacy_policy_title)
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -63,6 +79,10 @@ fun ImageSelectionScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.button_select_image))
             }
+        }
+
+        if (showPrivacyPolicy) {
+            PrivacyPolicyDialog(onDismiss = { showPrivacyPolicy = false })
         }
     }
 }
