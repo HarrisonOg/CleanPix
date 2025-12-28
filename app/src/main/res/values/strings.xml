@@ -38,6 +38,7 @@
     <string name="privacy_policy_title">Privacy Policy</string>
 
     <!-- Messages -->
+    <string name="pick_image_message">Select an image to clean</string>
     <string name="image_saved_to">Image saved to:\n%1$s</string>
     <string name="dialog_message_file_name">Enter a name for the cleaned image:</string>
     <string name="dialog_message_cancel_confirm">Are you sure you want to cancel?</string>
