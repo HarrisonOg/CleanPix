@@ -6,6 +6,7 @@
     <string name="button_select_image">Select Image</string>
     <string name="button_strip_metadata">Strip Metadata</string>
     <string name="button_save_image">Save Image</string>
+    <string name="button_save">Save</string>
     <string name="button_share">Share</string>
     <string name="button_start_over">Start Over</string>
     <string name="button_ok">OK</string>
@@ -15,6 +16,7 @@
     <!-- Image Labels -->
     <string name="label_original_image">Original Image</string>
     <string name="label_cleaned_image">✓ Cleaned Image</string>
+    <string name="label_file_name">File Name</string>
     <string name="content_desc_original_image">Original image</string>
     <string name="content_desc_cleaned_image">Cleaned image</string>
 
@@ -27,9 +29,11 @@
     <!-- Dialog Titles -->
     <string name="dialog_title_error">Error</string>
     <string name="dialog_title_success">Success</string>
+    <string name="dialog_title_save_image">Save Image</string>
 
     <!-- Messages -->
     <string name="image_saved_to">Image saved to:\n%1$s</string>
+    <string name="dialog_message_file_name">Enter a name for the cleaned image:</string>
 
     <!-- Error Messages -->
     <string name="error_read_image">Failed to read image: %1$s</string>
