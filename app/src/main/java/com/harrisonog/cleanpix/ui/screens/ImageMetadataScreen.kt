@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -47,9 +48,9 @@ fun ImageMetadataScreen(
     onDismissSaved: () -> Unit
 ) {
     val context = LocalContext.current
-    var showFileNameDialog by remember { mutableStateOf(false) }
-    var fileName by remember { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
-    var isMetadataExpanded by remember { mutableStateOf(false) }
+    var showFileNameDialog by rememberSaveable { mutableStateOf(false) }
+    var fileName by rememberSaveable { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
+    var isMetadataExpanded by rememberSaveable { mutableStateOf(false) }
 
     val arrowRotation by animateFloatAsState(
         targetValue = if (isMetadataExpanded) 180f else 0f,
