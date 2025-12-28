@@ -13,7 +13,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -187,6 +192,12 @@ fun ImageMetadataScreen(
                         enabled = !state.isProcessing,
                         modifier = Modifier.weight(1f)
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = stringResource(R.string.button_cancel),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(R.string.button_cancel))
                     }
 
@@ -199,6 +210,13 @@ fun ImageMetadataScreen(
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.CleaningServices,
+                                contentDescription = stringResource(R.string.button_strip_metadata),
+                                modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
@@ -314,6 +332,12 @@ fun ImageMetadataScreen(
                         modifier = Modifier.weight(1f),
                         enabled = !state.isProcessing
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.Save,
+                            contentDescription = stringResource(R.string.button_save_image),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text(stringResource(R.string.button_save_image))
                     }
                 }
@@ -323,6 +347,12 @@ fun ImageMetadataScreen(
                     onClick = onStartOver,
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = stringResource(R.string.button_start_over),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.button_start_over))
                 }
             }
