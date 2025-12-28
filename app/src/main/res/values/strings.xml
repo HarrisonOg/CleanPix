@@ -33,11 +33,13 @@
     <string name="dialog_title_error">Error</string>
     <string name="dialog_title_success">Success</string>
     <string name="dialog_title_save_image">Save Image</string>
+    <string name="dialog_title_cancel_confirm">Cancel?</string>
     <string name="privacy_policy_title">Privacy Policy</string>
 
     <!-- Messages -->
     <string name="image_saved_to">Image saved to:\n%1$s</string>
     <string name="dialog_message_file_name">Enter a name for the cleaned image:</string>
+    <string name="dialog_message_cancel_confirm">Are you sure you want to cancel?</string>
 
     <!-- Error Messages -->
     <string name="error_read_image">Failed to read image: %1$s</string>
