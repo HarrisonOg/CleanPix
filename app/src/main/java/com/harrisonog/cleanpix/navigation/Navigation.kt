@@ -25,7 +25,11 @@ fun AppNavigation(
         startDestination = Screen.ImageSelection.route
     ) {
         composable(Screen.ImageSelection.route) {
+            val state by viewModel.state.collectAsState()
+
             ImageSelectionScreen(
+                showOnboarding = state.showOnboarding,
+                onDismissOnboarding = viewModel::dismissOnboarding,
                 onImageSelected = { uri ->
                     viewModel.selectImage(uri)
                     navController.navigate(Screen.ImageMetadata.route)
