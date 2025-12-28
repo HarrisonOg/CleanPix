@@ -236,7 +236,7 @@ fun MainScreen(
                                         // Handle error silently or show a toast
                                         android.widget.Toast.makeText(
                                             context,
-                                            "Failed to share image: ${e.message}",
+                                            context.getString(R.string.error_share_image, e.message ?: "Unknown error"),
                                             android.widget.Toast.LENGTH_SHORT
                                         ).show()
                                     }

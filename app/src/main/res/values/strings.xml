@@ -41,6 +41,7 @@
     <string name="error_read_image">Failed to read image: %1$s</string>
     <string name="error_strip_metadata">Failed to strip metadata: %1$s</string>
     <string name="error_save_image">Failed to save image: %1$s</string>
+    <string name="error_share_image">Failed to share image: %1$s</string>
 
     <!-- File Names -->
     <string name="file_name_prefix">cleaned_</string>
