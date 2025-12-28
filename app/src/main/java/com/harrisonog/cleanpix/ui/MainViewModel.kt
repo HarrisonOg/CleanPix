@@ -1,6 +1,7 @@
 package com.harrisonog.cleanpix.ui
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,15 +20,25 @@ data class ImageState(
     val cleanedMetadata: Map<String, String> = emptyMap(),
     val isProcessing: Boolean = false,
     val error: String? = null,
-    val savedPath: String? = null
+    val savedPath: String? = null,
+    val showOnboarding: Boolean = false
 )
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
+    private val preferences = application.getSharedPreferences("cleanpix_prefs", Context.MODE_PRIVATE)
     private val _state = MutableStateFlow(ImageState())
     val state: StateFlow<ImageState> = _state.asStateFlow()
 
     private val metadataStripper: MetadataStripper = MetadataStripper(application)
+
+    init {
+        // Check if this is the first run
+        val isFirstRun = preferences.getBoolean("is_first_run", true)
+        if (isFirstRun) {
+            _state.update { it.copy(showOnboarding = true) }
+        }
+    }
 
     fun selectImage(uri: Uri) {
         viewModelScope.launch {
@@ -130,5 +141,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun dismissSavedMessage() {
         _state.update { it.copy(savedPath = null) }
+    }
+
+    fun dismissOnboarding() {
+        preferences.edit().putBoolean("is_first_run", false).apply()
+        _state.update { it.copy(showOnboarding = false) }
     }
 }
