@@ -77,107 +77,99 @@ fun ImageMetadataScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = stringResource(R.string.label_original_image),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
-                        AsyncImage(
-                            model = state.originalUri,
-                            contentDescription = stringResource(R.string.content_desc_original_image),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        // Expandable metadata section
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        // Image section with padding
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.label_original_image),
+                                style = MaterialTheme.typography.titleMedium
                             )
+
+                            AsyncImage(
+                                model = state.originalUri,
+                                contentDescription = stringResource(R.string.content_desc_original_image),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+
+                        // Expandable metadata section - full width clickable area
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            onClick = { isMetadataExpanded = !isMetadataExpanded }
                         ) {
                             Column {
                                 // Clickable header
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(12.dp),
+                                        .padding(16.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    TextButton(
-                                        onClick = { isMetadataExpanded = !isMetadataExpanded },
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                text = if (isMetadataExpanded) {
-                                                    stringResource(R.string.button_close_metadata)
-                                                } else {
-                                                    stringResource(R.string.button_show_metadata)
-                                                },
-                                                style = MaterialTheme.typography.titleSmall
-                                            )
-                                            Icon(
-                                                imageVector = Icons.Default.KeyboardArrowDown,
-                                                contentDescription = null,
-                                                modifier = Modifier.rotate(arrowRotation)
-                                            )
-                                        }
-                                    }
-                                }
-
-                                // Expandable content with animation
-                                AnimatedVisibility(
-                                    visible = isMetadataExpanded,
-                                    enter = expandVertically(
-                                        animationSpec = tween(durationMillis = 300)
-                                    ) + fadeIn(
-                                        animationSpec = tween(durationMillis = 300)
-                                    ),
-                                    exit = shrinkVertically(
-                                        animationSpec = tween(durationMillis = 300)
-                                    ) + fadeOut(
-                                        animationSpec = tween(durationMillis = 300)
-                                    )
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 12.dp)
-                                            .padding(bottom = 12.dp),
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        if (state.originalMetadata.isNotEmpty()) {
-                                            Text(
-                                                text = stringResource(R.string.metadata_found),
-                                                style = MaterialTheme.typography.titleSmall,
-                                                color = MaterialTheme.colorScheme.error
-                                            )
-
-                                            state.originalMetadata.forEach { (key, value) ->
-                                                Text(
-                                                    text = "$key: $value",
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
+                                    Text(
+                                        text = if (isMetadataExpanded) {
+                                            stringResource(R.string.button_close_metadata)
                                         } else {
-                                            Text(
-                                                text = stringResource(R.string.no_metadata_found),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.tertiary
-                                            )
-                                        }
+                                            stringResource(R.string.button_show_metadata)
+                                        },
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        modifier = Modifier.rotate(arrowRotation)
+                                    )
+                                }
+                            }
+                        }
+
+                        // Expandable content with animation
+                        AnimatedVisibility(
+                            visible = isMetadataExpanded,
+                            enter = expandVertically(
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeIn(
+                                animationSpec = tween(durationMillis = 300)
+                            ),
+                            exit = shrinkVertically(
+                                animationSpec = tween(durationMillis = 300)
+                            ) + fadeOut(
+                                animationSpec = tween(durationMillis = 300)
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                if (state.originalMetadata.isNotEmpty()) {
+                                    Text(
+                                        text = stringResource(R.string.metadata_found),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = MaterialTheme.colorScheme.error
+                                    )
+
+                                    state.originalMetadata.forEach { (key, value) ->
+                                        Text(
+                                            text = "$key: $value",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
                                     }
+                                } else {
+                                    Text(
+                                        text = stringResource(R.string.no_metadata_found),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.tertiary
+                                    )
                                 }
                             }
                         }
