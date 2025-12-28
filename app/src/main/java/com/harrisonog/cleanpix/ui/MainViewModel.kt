@@ -1,8 +1,8 @@
 package com.harrisonog.cleanpix.ui
 
-import android.content.Context
+import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.data.MetadataStripper
@@ -22,22 +22,12 @@ data class ImageState(
     val savedPath: String? = null
 )
 
-class MainViewModel : ViewModel() {
+class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(ImageState())
     val state: StateFlow<ImageState> = _state.asStateFlow()
 
-    private lateinit var metadataStripper: MetadataStripper
-    private lateinit var context: Context
-    private var isInitialized = false
-
-    fun initialize(context: Context) {
-        if (!isInitialized) {
-            this.context = context
-            metadataStripper = MetadataStripper(context)
-            isInitialized = true
-        }
-    }
+    private val metadataStripper: MetadataStripper = MetadataStripper(application)
 
     fun selectImage(uri: Uri) {
         viewModelScope.launch {
@@ -60,7 +50,7 @@ class MainViewModel : ViewModel() {
                 _state.update {
                     it.copy(
                         isProcessing = false,
-                        error = context.getString(R.string.error_read_image, e.message ?: "Unknown error")
+                        error = getApplication<Application>().getString(R.string.error_read_image, e.message ?: "Unknown error")
                     )
                 }
             }
@@ -90,7 +80,7 @@ class MainViewModel : ViewModel() {
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = context.getString(R.string.error_strip_metadata, exception.message ?: "Unknown error")
+                            error = getApplication<Application>().getString(R.string.error_strip_metadata, exception.message ?: "Unknown error")
                         )
                     }
                 }
@@ -123,7 +113,7 @@ class MainViewModel : ViewModel() {
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = context.getString(R.string.error_save_image, exception.message ?: "Unknown error")
+                            error = getApplication<Application>().getString(R.string.error_save_image, exception.message ?: "Unknown error")
                         )
                     }
                 }
