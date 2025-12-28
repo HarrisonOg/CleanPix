@@ -13,6 +13,7 @@
     <string name="button_cancel">Cancel</string>
     <string name="button_show_metadata">Show Metadata</string>
     <string name="button_close_metadata">Close Metadata</string>
+    <string name="button_close">Close</string>
     <string name="share_image">Share Image</string>
 
     <!-- Image Labels -->
@@ -32,6 +33,7 @@
     <string name="dialog_title_error">Error</string>
     <string name="dialog_title_success">Success</string>
     <string name="dialog_title_save_image">Save Image</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
 
     <!-- Messages -->
     <string name="image_saved_to">Image saved to:\n%1$s</string>

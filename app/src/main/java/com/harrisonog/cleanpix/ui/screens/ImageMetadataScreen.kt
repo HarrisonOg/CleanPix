@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
@@ -33,7 +34,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -59,6 +62,7 @@ import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.ui.ImageState
+import com.harrisonog.cleanpix.ui.components.PrivacyPolicyDialog
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,6 +80,7 @@ fun ImageMetadataScreen(
     var showFileNameDialog by rememberSaveable { mutableStateOf(false) }
     var fileName by rememberSaveable { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
     var isMetadataExpanded by rememberSaveable { mutableStateOf(false) }
+    var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
 
     val arrowRotation by animateFloatAsState(
         targetValue = if (isMetadataExpanded) 180f else 0f,
@@ -90,7 +95,15 @@ fun ImageMetadataScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                ),
+                actions = {
+                    IconButton(onClick = { showPrivacyPolicy = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = stringResource(R.string.privacy_policy_title)
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -445,6 +458,10 @@ fun ImageMetadataScreen(
                         }
                     }
                 )
+            }
+
+            if (showPrivacyPolicy) {
+                PrivacyPolicyDialog(onDismiss = { showPrivacyPolicy = false })
             }
         }
     }
