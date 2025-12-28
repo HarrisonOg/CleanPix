@@ -2,17 +2,24 @@ package com.harrisonog.cleanpix.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -37,6 +44,12 @@ fun ImageMetadataScreen(
     var showFileNameDialog by remember { mutableStateOf(false) }
     var fileName by remember { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
     var isMetadataExpanded by remember { mutableStateOf(false) }
+
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (isMetadataExpanded) 180f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "arrow rotation"
+    )
 
     Scaffold(
         topBar = {
@@ -115,19 +128,28 @@ fun ImageMetadataScreen(
                                                 style = MaterialTheme.typography.titleSmall
                                             )
                                             Icon(
-                                                imageVector = if (isMetadataExpanded) {
-                                                    Icons.Default.KeyboardArrowUp
-                                                } else {
-                                                    Icons.Default.KeyboardArrowDown
-                                                },
-                                                contentDescription = null
+                                                imageVector = Icons.Default.KeyboardArrowDown,
+                                                contentDescription = null,
+                                                modifier = Modifier.rotate(arrowRotation)
                                             )
                                         }
                                     }
                                 }
 
-                                // Expandable content
-                                if (isMetadataExpanded) {
+                                // Expandable content with animation
+                                AnimatedVisibility(
+                                    visible = isMetadataExpanded,
+                                    enter = expandVertically(
+                                        animationSpec = tween(durationMillis = 300)
+                                    ) + fadeIn(
+                                        animationSpec = tween(durationMillis = 300)
+                                    ),
+                                    exit = shrinkVertically(
+                                        animationSpec = tween(durationMillis = 300)
+                                    ) + fadeOut(
+                                        animationSpec = tween(durationMillis = 300)
+                                    )
+                                ) {
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
