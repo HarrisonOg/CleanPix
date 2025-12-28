@@ -78,6 +78,7 @@ fun ImageMetadataScreen(
 ) {
     val context = LocalContext.current
     var showFileNameDialog by rememberSaveable { mutableStateOf(false) }
+    var showCancelConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var fileName by rememberSaveable { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
     var isMetadataExpanded by rememberSaveable { mutableStateOf(false) }
     var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
@@ -227,7 +228,7 @@ fun ImageMetadataScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedButton(
-                        onClick = onCancel,
+                        onClick = { showCancelConfirmDialog = true },
                         enabled = !state.isProcessing,
                         modifier = Modifier.weight(1f)
                     ) {
@@ -454,6 +455,30 @@ fun ImageMetadataScreen(
                     },
                     dismissButton = {
                         TextButton(onClick = { showFileNameDialog = false }) {
+                            Text(stringResource(R.string.button_cancel))
+                        }
+                    }
+                )
+            }
+
+            // Cancel confirmation dialog
+            if (showCancelConfirmDialog) {
+                AlertDialog(
+                    onDismissRequest = { showCancelConfirmDialog = false },
+                    title = { Text(stringResource(R.string.dialog_title_cancel_confirm)) },
+                    text = { Text(stringResource(R.string.dialog_message_cancel_confirm)) },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showCancelConfirmDialog = false
+                                onCancel()
+                            }
+                        ) {
+                            Text(stringResource(R.string.button_ok))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showCancelConfirmDialog = false }) {
                             Text(stringResource(R.string.button_cancel))
                         }
                     }
