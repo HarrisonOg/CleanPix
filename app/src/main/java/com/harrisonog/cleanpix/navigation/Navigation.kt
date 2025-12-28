@@ -1,6 +1,5 @@
 package com.harrisonog.cleanpix.navigation
 
-import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -8,16 +7,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.harrisonog.cleanpix.ui.MainViewModel
-import com.harrisonog.cleanpix.ui.screens.MainScreen
+import com.harrisonog.cleanpix.ui.screens.ImageSelectionScreen
+import com.harrisonog.cleanpix.ui.screens.ImageMetadataScreen
 
 sealed class Screen(val route: String) {
-    object Main : Screen("main")
-    object ImageEditor : Screen("imageEditor/{imageUri}") {
-        fun createRoute(imageUri: Uri): String {
-            val encodedUri = Uri.encode(imageUri.toString())
-            return "imageEditor/$encodedUri"
-        }
-    }
+    object ImageSelection : Screen("imageSelection")
+    object ImageMetadata : Screen("imageMetadata")
 }
 
 @Composable
@@ -27,22 +22,30 @@ fun AppNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Main.route
+        startDestination = Screen.ImageSelection.route
     ) {
-        composable(Screen.Main.route) {
+        composable(Screen.ImageSelection.route) {
+            ImageSelectionScreen(
+                onImageSelected = { uri ->
+                    viewModel.selectImage(uri)
+                    navController.navigate(Screen.ImageMetadata.route)
+                }
+            )
+        }
+
+        composable(Screen.ImageMetadata.route) {
             val state by viewModel.state.collectAsState()
 
-            MainScreen(
+            ImageMetadataScreen(
                 state = state,
-                onImageSelected = viewModel::selectImage,
                 onStripMetadata = viewModel::stripMetadata,
                 onSaveImage = viewModel::saveCleanedImage,
-                onClearState = viewModel::clearState,
+                onCancel = {
+                    viewModel.clearState()
+                    navController.popBackStack()
+                },
                 onDismissError = viewModel::dismissError,
-                onDismissSaved = viewModel::dismissSavedMessage,
-                onEditImage = { uri ->
-                    navController.navigate(Screen.ImageEditor.createRoute(uri))
-                }
+                onDismissSaved = viewModel::dismissSavedMessage
             )
         }
     }

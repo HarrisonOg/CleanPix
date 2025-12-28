@@ -9,6 +9,7 @@
     <string name="button_share">Share</string>
     <string name="button_start_over">Start Over</string>
     <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancel</string>
     <string name="share_image">Share Image</string>
 
     <!-- Image Labels -->
