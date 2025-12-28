@@ -26,12 +26,14 @@ import java.io.File
 fun ImageMetadataScreen(
     state: ImageState,
     onStripMetadata: () -> Unit,
-    onSaveImage: () -> Unit,
+    onSaveImage: (String) -> Unit,
     onCancel: () -> Unit,
     onDismissError: () -> Unit,
     onDismissSaved: () -> Unit
 ) {
     val context = LocalContext.current
+    var showFileNameDialog by remember { mutableStateOf(false) }
+    var fileName by remember { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
 
     Scaffold(
         topBar = {
@@ -229,7 +231,10 @@ fun ImageMetadataScreen(
                     }
 
                     Button(
-                        onClick = onSaveImage,
+                        onClick = {
+                            fileName = "cleaned_${System.currentTimeMillis()}"
+                            showFileNameDialog = true
+                        },
                         modifier = Modifier.weight(1f),
                         enabled = !state.isProcessing
                     ) {
@@ -261,6 +266,42 @@ fun ImageMetadataScreen(
                     confirmButton = {
                         TextButton(onClick = onDismissSaved) {
                             Text(stringResource(R.string.button_ok))
+                        }
+                    }
+                )
+            }
+
+            // File name dialog
+            if (showFileNameDialog) {
+                AlertDialog(
+                    onDismissRequest = { showFileNameDialog = false },
+                    title = { Text(stringResource(R.string.dialog_title_save_image)) },
+                    text = {
+                        Column {
+                            Text(stringResource(R.string.dialog_message_file_name))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = fileName,
+                                onValueChange = { fileName = it },
+                                label = { Text(stringResource(R.string.label_file_name)) },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showFileNameDialog = false
+                                onSaveImage(fileName)
+                            }
+                        ) {
+                            Text(stringResource(R.string.button_save))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showFileNameDialog = false }) {
+                            Text(stringResource(R.string.button_cancel))
                         }
                     }
                 )
