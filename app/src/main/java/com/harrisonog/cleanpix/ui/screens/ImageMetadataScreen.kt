@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -108,15 +109,24 @@ fun ImageMetadataScreen(
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Scrollable content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(
+                        top = 16.dp,
+                        bottom = if (state.cleanedUri != null) 136.dp else 88.dp
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
             // Show original image and metadata (only if metadata hasn't been cleaned yet)
             if (state.originalUri != null && state.cleanedUri == null) {
                 Card(
@@ -210,48 +220,6 @@ fun ImageMetadataScreen(
                         }
                     }
                 }
-
-                // Clean Metadata and Cancel buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = { showCancelConfirmDialog = true },
-                        enabled = !state.isProcessing,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Cancel,
-                            contentDescription = stringResource(R.string.button_cancel),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.button_cancel))
-                    }
-
-                    Button(
-                        onClick = onStripMetadata,
-                        enabled = !state.isProcessing,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        if (state.isProcessing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                strokeWidth = 2.dp
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.CleaningServices,
-                                contentDescription = stringResource(R.string.button_strip_metadata),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                        }
-                        Text(stringResource(R.string.button_strip_metadata))
-                    }
-                }
             }
 
             // Show cleaned image after metadata is stripped
@@ -301,88 +269,153 @@ fun ImageMetadataScreen(
                         }
                     }
                 }
+            }
+            }
 
-                // Share and Save buttons (shown after metadata is cleaned)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // Sticky bottom buttons
+            if (state.originalUri != null) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth(),
+                    shadowElevation = 8.dp,
+                    tonalElevation = 3.dp,
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    Button(
-                        onClick = {
-                            state.cleanedUri.let { uri ->
-                                try {
-                                    // Convert file:// URI to content:// URI using FileProvider
-                                    val contentUri = if (uri.scheme == "file") {
-                                        val file = File(uri.path ?: return@let)
-                                        FileProvider.getUriForFile(
-                                            context,
-                                            "${context.packageName}.fileprovider",
-                                            file
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Cancel and Strip Metadata buttons (before cleaning)
+                            if (state.cleanedUri == null) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedButton(
+                                        onClick = { showCancelConfirmDialog = true },
+                                        enabled = !state.isProcessing,
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Cancel,
+                                            contentDescription = stringResource(R.string.button_cancel),
+                                            modifier = Modifier.size(20.dp)
                                         )
-                                    } else {
-                                        uri
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(R.string.button_cancel))
                                     }
 
-                                    val shareIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_STREAM, contentUri)
-                                        type = "image/*"
-                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    Button(
+                                        onClick = onStripMetadata,
+                                        enabled = !state.isProcessing,
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        if (state.isProcessing) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(20.dp),
+                                                strokeWidth = 2.dp
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                        } else {
+                                            Icon(
+                                                imageVector = Icons.Default.CleaningServices,
+                                                contentDescription = stringResource(R.string.button_strip_metadata),
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                        }
+                                        Text(stringResource(R.string.button_strip_metadata))
                                     }
-                                    context.startActivity(
-                                        Intent.createChooser(shareIntent, context.getString(R.string.share_image))
-                                    )
-                                } catch (e: Exception) {
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        context.getString(R.string.error_share_image, e.message ?: "Unknown error"),
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
                                 }
                             }
-                        },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = stringResource(R.string.button_share),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.button_share))
-                    }
 
-                    Button(
-                        onClick = {
-                            fileName = "cleaned_${System.currentTimeMillis()}"
-                            showFileNameDialog = true
-                        },
-                        modifier = Modifier.weight(1f),
-                        enabled = !state.isProcessing
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = stringResource(R.string.button_save_image),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(stringResource(R.string.button_save_image))
-                    }
-                }
+                            // Share, Save, and Start Over buttons (after cleaning)
+                            if (state.cleanedUri != null) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            state.cleanedUri.let { uri ->
+                                                try {
+                                                    // Convert file:// URI to content:// URI using FileProvider
+                                                    val contentUri = if (uri.scheme == "file") {
+                                                        val file = File(uri.path ?: return@let)
+                                                        FileProvider.getUriForFile(
+                                                            context,
+                                                            "${context.packageName}.fileprovider",
+                                                            file
+                                                        )
+                                                    } else {
+                                                        uri
+                                                    }
 
-                // Start Over button
-                OutlinedButton(
-                    onClick = onStartOver,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = stringResource(R.string.button_start_over),
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.button_start_over))
-                }
+                                                    val shareIntent = Intent().apply {
+                                                        action = Intent.ACTION_SEND
+                                                        putExtra(Intent.EXTRA_STREAM, contentUri)
+                                                        type = "image/*"
+                                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                    }
+                                                    context.startActivity(
+                                                        Intent.createChooser(shareIntent, context.getString(R.string.share_image))
+                                                    )
+                                                } catch (e: Exception) {
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        context.getString(R.string.error_share_image, e.message ?: "Unknown error"),
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Share,
+                                            contentDescription = stringResource(R.string.button_share),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(stringResource(R.string.button_share))
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            fileName = "cleaned_${System.currentTimeMillis()}"
+                                            showFileNameDialog = true
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        enabled = !state.isProcessing
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Save,
+                                            contentDescription = stringResource(R.string.button_save_image),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(stringResource(R.string.button_save_image))
+                                    }
+                                }
+
+                                OutlinedButton(
+                                    onClick = onStartOver,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = stringResource(R.string.button_start_over),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(R.string.button_start_over))
+                                }
+                            }
+                        }
+                    }
             }
 
             // Error message
