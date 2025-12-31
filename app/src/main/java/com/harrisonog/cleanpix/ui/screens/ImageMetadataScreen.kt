@@ -139,9 +139,8 @@ fun ImageMetadataScreen(
                                 model = state.originalUri,
                                 contentDescription = stringResource(R.string.content_desc_original_image),
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(300.dp),
-                                contentScale = ContentScale.Crop
+                                    .fillMaxWidth(),
+                                contentScale = ContentScale.Fit
                             )
                         }
 
@@ -287,9 +286,8 @@ fun ImageMetadataScreen(
                             model = state.cleanedUri,
                             contentDescription = stringResource(R.string.content_desc_cleaned_image),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp),
-                            contentScale = ContentScale.Crop
+                                .fillMaxWidth(),
+                            contentScale = ContentScale.Fit
                         )
 
                         if (state.cleanedMetadata.isEmpty()) {

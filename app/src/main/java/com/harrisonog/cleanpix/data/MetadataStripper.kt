@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -74,22 +75,72 @@ class MetadataStripper(private val context: Context) {
      */
     fun stripMetadata(uri: Uri): Result<Uri> {
         return try {
+            // Read EXIF orientation before loading bitmap
+            val orientation = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val exif = ExifInterface(inputStream)
+                exif.getAttributeInt(
+                    ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_NORMAL
+                )
+            } ?: ExifInterface.ORIENTATION_NORMAL
+
             // Load the bitmap from the original URI
-            val bitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
+            val originalBitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 BitmapFactory.decodeStream(inputStream)
             } ?: return Result.failure(Exception("Failed to load image"))
+
+            // Rotate bitmap based on EXIF orientation
+            val rotatedBitmap = rotateBitmap(originalBitmap, orientation)
 
             // Create a temporary file for the cleaned image
             val cleanedFile = File(context.cacheDir, "cleaned_${System.currentTimeMillis()}.jpg")
 
             // Save bitmap without metadata (JPEG compression creates a new file without EXIF)
             FileOutputStream(cleanedFile).use { outputStream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            }
+
+            // Clean up bitmaps if rotation created a new one
+            if (rotatedBitmap != originalBitmap) {
+                originalBitmap.recycle()
             }
 
             Result.success(Uri.fromFile(cleanedFile))
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    /**
+     * Rotate a bitmap based on EXIF orientation
+     */
+    private fun rotateBitmap(bitmap: Bitmap, orientation: Int): Bitmap {
+        val matrix = Matrix()
+        when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+            ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+            ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+            ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+            ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            ExifInterface.ORIENTATION_TRANSPOSE -> {
+                matrix.postRotate(90f)
+                matrix.postScale(-1f, 1f)
+            }
+            ExifInterface.ORIENTATION_TRANSVERSE -> {
+                matrix.postRotate(270f)
+                matrix.postScale(-1f, 1f)
+            }
+            else -> return bitmap // ORIENTATION_NORMAL or ORIENTATION_UNDEFINED
+        }
+
+        return try {
+            val rotatedBitmap = Bitmap.createBitmap(
+                bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
+            )
+            rotatedBitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            bitmap
         }
     }
 
