@@ -27,7 +27,7 @@
     <string name="metadata_found">Metadata Found:</string>
     <string name="no_metadata_found">No metadata found</string>
     <string name="metadata_removed_success">✓ All metadata successfully removed</string>
-    <string name="warning_metadata_remains">Warning: Some metadata remains:</string>
+    <string name="warning_metadata_remains">Remaining image metadata:</string>
 
     <!-- Dialog Titles -->
     <string name="dialog_title_error">Error</string>
