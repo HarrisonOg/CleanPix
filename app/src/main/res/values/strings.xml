@@ -50,6 +50,11 @@
     <string name="error_strip_metadata">Failed to strip metadata: %1$s</string>
     <string name="error_save_image">Failed to save image: %1$s</string>
     <string name="error_share_image">Failed to share image: %1$s</string>
+    <string name="error_image_too_large">Image is too large to process (maximum %1$dMB)</string>
+    <string name="error_unsupported_format">Unsupported image format. Please select a JPG or PNG image.</string>
+    <string name="error_corrupted_image">Image file appears to be corrupted or invalid</string>
+    <string name="error_dimensions_too_large">Image dimensions are too large (maximum %1$dpx)</string>
+    <string name="error_out_of_memory">Image is too large to process. Please try a smaller image.</string>
 
     <!-- File Names -->
     <string name="file_name_prefix">cleaned_</string>

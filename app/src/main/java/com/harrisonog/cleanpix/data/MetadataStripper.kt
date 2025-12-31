@@ -19,6 +19,93 @@ import java.io.IOException
  */
 class MetadataStripper(private val context: Context) {
 
+    companion object {
+        private const val MAX_FILE_SIZE_MB = 25 // Maximum file size in MB
+        private const val MAX_IMAGE_DIMENSION = 8192 // Maximum width or height in pixels
+
+        private val SUPPORTED_MIME_TYPES = listOf(
+            "image/jpeg",
+            "image/jpg",
+            "image/png"
+        )
+    }
+
+    /**
+     * Get the file size of an image URI in bytes
+     */
+    private fun getFileSize(uri: Uri): Long? {
+        return try {
+            context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                pfd.statSize
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Get the MIME type of an image URI
+     */
+    private fun getMimeType(uri: Uri): String? {
+        return context.contentResolver.getType(uri)
+    }
+
+    /**
+     * Get image dimensions without loading the full bitmap into memory
+     */
+    private fun getImageDimensions(uri: Uri): Pair<Int, Int>? {
+        return try {
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                val options = BitmapFactory.Options().apply {
+                    inJustDecodeBounds = true
+                }
+                BitmapFactory.decodeStream(inputStream, null, options)
+                Pair(options.outWidth, options.outHeight)
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    /**
+     * Validate image file before processing
+     * Checks MIME type, file size, and dimensions
+     */
+    private fun validateImage(uri: Uri): Result<Unit> {
+        // 1. Check MIME type (if available)
+        // Note: MIME type might be null for programmatically created files or file:// URIs
+        val mimeType = getMimeType(uri)
+        if (mimeType != null && mimeType !in SUPPORTED_MIME_TYPES) {
+            // If we have a MIME type and it's not supported, reject it
+            return Result.failure(Exception("Unsupported image format. Please select a JPG or PNG image."))
+        }
+
+        // 2. Check file size
+        val fileSize = getFileSize(uri)
+        if (fileSize != null) {
+            val fileSizeMB = fileSize / (1024.0 * 1024.0)
+            if (fileSizeMB > MAX_FILE_SIZE_MB) {
+                return Result.failure(Exception("Image file is too large (${String.format("%.1f", fileSizeMB)}MB). Maximum size is ${MAX_FILE_SIZE_MB}MB."))
+            }
+        }
+        // Note: If file size is null, we continue (might be a stream or special URI)
+
+        // 3. Check dimensions
+        val dimensions = getImageDimensions(uri)
+        if (dimensions != null) {
+            val (width, height) = dimensions
+            if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+                return Result.failure(Exception("Image dimensions too large (${width}x${height}px). Maximum dimension is ${MAX_IMAGE_DIMENSION}px."))
+            }
+            if (width <= 0 || height <= 0) {
+                return Result.failure(Exception("Invalid image dimensions."))
+            }
+        }
+        // Note: If dimensions are null, we let BitmapFactory handle it and fail later if needed
+
+        return Result.success(Unit)
+    }
+
     /**
      * Read EXIF metadata from an image URI
      */
@@ -75,6 +162,11 @@ class MetadataStripper(private val context: Context) {
      */
     fun stripMetadata(uri: Uri): Result<Uri> {
         return try {
+            // Validate image before processing
+            validateImage(uri).getOrElse { exception ->
+                return Result.failure(exception)
+            }
+
             // Read EXIF orientation before loading bitmap
             val orientation = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 val exif = ExifInterface(inputStream)
@@ -87,7 +179,7 @@ class MetadataStripper(private val context: Context) {
             // Load the bitmap from the original URI
             val originalBitmap = context.contentResolver.openInputStream(uri)?.use { inputStream ->
                 BitmapFactory.decodeStream(inputStream)
-            } ?: return Result.failure(Exception("Failed to load image"))
+            } ?: return Result.failure(Exception("Failed to load image. The file may be corrupted."))
 
             // Rotate bitmap based on EXIF orientation
             val rotatedBitmap = rotateBitmap(originalBitmap, orientation)
@@ -106,6 +198,8 @@ class MetadataStripper(private val context: Context) {
             }
 
             Result.success(Uri.fromFile(cleanedFile))
+        } catch (e: OutOfMemoryError) {
+            Result.failure(Exception("Image is too large to process. Please try a smaller image."))
         } catch (e: Exception) {
             Result.failure(e)
         }
