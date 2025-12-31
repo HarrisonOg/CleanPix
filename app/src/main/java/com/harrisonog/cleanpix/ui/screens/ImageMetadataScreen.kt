@@ -80,7 +80,7 @@ fun ImageMetadataScreen(
     var showFileNameDialog by rememberSaveable { mutableStateOf(false) }
     var showCancelConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var fileName by rememberSaveable { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
-    var isMetadataExpanded by rememberSaveable { mutableStateOf(false) }
+    var isMetadataExpanded by rememberSaveable { mutableStateOf(true) }
     var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
 
     val arrowRotation by animateFloatAsState(
@@ -160,11 +160,7 @@ fun ImageMetadataScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = if (isMetadataExpanded) {
-                                            stringResource(R.string.button_close_metadata)
-                                        } else {
-                                            stringResource(R.string.button_show_metadata)
-                                        },
+                                        text = stringResource(R.string.metadata_found),
                                         style = MaterialTheme.typography.titleMedium
                                     )
                                     Icon(
@@ -197,12 +193,6 @@ fun ImageMetadataScreen(
                                 verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 if (state.originalMetadata.isNotEmpty()) {
-                                    Text(
-                                        text = stringResource(R.string.metadata_found),
-                                        style = MaterialTheme.typography.titleSmall,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-
                                     state.originalMetadata.forEach { (key, value) ->
                                         Text(
                                             text = "$key: $value",
