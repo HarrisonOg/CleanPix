@@ -95,8 +95,8 @@ fun ImageMetadataScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.title_metadata_stripper)) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
                     IconButton(onClick = { showPrivacyPolicy = true }) {
