@@ -9,10 +9,12 @@ import androidx.navigation.compose.composable
 import com.harrisonog.cleanpix.ui.MainViewModel
 import com.harrisonog.cleanpix.ui.screens.ImageSelectionScreen
 import com.harrisonog.cleanpix.ui.screens.ImageMetadataScreen
+import com.harrisonog.cleanpix.ui.screens.PrivacyPolicyScreen
 
 sealed class Screen(val route: String) {
     object ImageSelection : Screen("imageSelection")
     object ImageMetadata : Screen("imageMetadata")
+    object PrivacyPolicy : Screen("privacyPolicy")
 }
 
 @Composable
@@ -33,6 +35,9 @@ fun AppNavigation(
                 onImageSelected = { uri ->
                     viewModel.selectImage(uri)
                     navController.navigate(Screen.ImageMetadata.route)
+                },
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate(Screen.PrivacyPolicy.route)
                 }
             )
         }
@@ -53,7 +58,18 @@ fun AppNavigation(
                     navController.popBackStack()
                 },
                 onDismissError = viewModel::dismissError,
-                onDismissSaved = viewModel::dismissSavedMessage
+                onDismissSaved = viewModel::dismissSavedMessage,
+                onNavigateToPrivacyPolicy = {
+                    navController.navigate(Screen.PrivacyPolicy.route)
+                }
+            )
+        }
+
+        composable(Screen.PrivacyPolicy.route) {
+            PrivacyPolicyScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }

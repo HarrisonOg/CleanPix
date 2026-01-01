@@ -40,16 +40,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.harrisonog.cleanpix.R
-import com.harrisonog.cleanpix.ui.components.PrivacyPolicyDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageSelectionScreen(
     showOnboarding: Boolean,
     onDismissOnboarding: () -> Unit,
-    onImageSelected: (Uri) -> Unit
+    onImageSelected: (Uri) -> Unit,
+    onNavigateToPrivacyPolicy: () -> Unit
 ) {
-    var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -66,7 +65,7 @@ fun ImageSelectionScreen(
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
-                    IconButton(onClick = { showPrivacyPolicy = true }) {
+                    IconButton(onClick = onNavigateToPrivacyPolicy) {
                         Icon(
                             imageVector = Icons.Default.Description,
                             contentDescription = stringResource(R.string.privacy_policy_title)
@@ -117,10 +116,6 @@ fun ImageSelectionScreen(
                     style = MaterialTheme.typography.titleMedium
                 )
             }
-        }
-
-        if (showPrivacyPolicy) {
-            PrivacyPolicyDialog(onDismiss = { showPrivacyPolicy = false })
         }
 
         if (showOnboarding) {
