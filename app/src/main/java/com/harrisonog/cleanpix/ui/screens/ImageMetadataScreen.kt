@@ -63,7 +63,6 @@ import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.harrisonog.cleanpix.R
 import com.harrisonog.cleanpix.ui.ImageState
-import com.harrisonog.cleanpix.ui.components.PrivacyPolicyDialog
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,14 +74,14 @@ fun ImageMetadataScreen(
     onCancel: () -> Unit,
     onStartOver: () -> Unit,
     onDismissError: () -> Unit,
-    onDismissSaved: () -> Unit
+    onDismissSaved: () -> Unit,
+    onNavigateToPrivacyPolicy: () -> Unit
 ) {
     val context = LocalContext.current
     var showFileNameDialog by rememberSaveable { mutableStateOf(false) }
     var showCancelConfirmDialog by rememberSaveable { mutableStateOf(false) }
     var fileName by rememberSaveable { mutableStateOf("cleaned_${System.currentTimeMillis()}") }
     var isMetadataExpanded by rememberSaveable { mutableStateOf(true) }
-    var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
 
     val arrowRotation by animateFloatAsState(
         targetValue = if (isMetadataExpanded) 180f else 0f,
@@ -99,7 +98,7 @@ fun ImageMetadataScreen(
                     titleContentColor = MaterialTheme.colorScheme.onBackground
                 ),
                 actions = {
-                    IconButton(onClick = { showPrivacyPolicy = true }) {
+                    IconButton(onClick = onNavigateToPrivacyPolicy) {
                         Icon(
                             imageVector = Icons.Default.Description,
                             contentDescription = stringResource(R.string.privacy_policy_title)
@@ -504,10 +503,6 @@ fun ImageMetadataScreen(
                         }
                     }
                 )
-            }
-
-            if (showPrivacyPolicy) {
-                PrivacyPolicyDialog(onDismiss = { showPrivacyPolicy = false })
             }
         }
     }
