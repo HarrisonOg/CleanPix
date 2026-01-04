@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">CleanPix</string>
+    <string name="app_name">Picture Information Cleaner</string>
 
     <!-- Main Screen -->
-    <string name="title_metadata_stripper">CleanPix</string>
+    <string name="title_metadata_stripper">Picture Information Cleaner</string>
     <string name="button_select_image">Select Image</string>
     <string name="button_strip_metadata">Strip Metadata</string>
     <string name="button_save_image">Save Image</string>
@@ -34,7 +34,7 @@
     <string name="dialog_title_success">Success</string>
     <string name="dialog_title_save_image">Save Image</string>
     <string name="dialog_title_cancel_confirm">Cancel?</string>
-    <string name="dialog_title_welcome">Welcome to CleanPix</string>
+    <string name="dialog_title_welcome">Welcome to Picture Information Cleaner</string>
     <string name="privacy_policy_title">Privacy Policy</string>
 
     <!-- Messages -->
@@ -42,7 +42,7 @@
     <string name="image_saved_to">Image saved to:\n%1$s</string>
     <string name="dialog_message_file_name">Enter a name for the cleaned image:</string>
     <string name="dialog_message_cancel_confirm">Are you sure you want to cancel?</string>
-    <string name="onboarding_message">CleanPix creates a new copy of your image with all identifying metadata removed.\n Photos often contain location, device, and timestamp data that can compromise your privacy when shared online.</string>
+    <string name="onboarding_message">Picture Information Cleaner creates a new copy of your image with all identifying metadata removed.\n Photos often contain location, device, and timestamp data that can compromise your privacy when shared online.</string>
     <string name="button_got_it">Got it</string>
 
     <!-- Error Messages -->
